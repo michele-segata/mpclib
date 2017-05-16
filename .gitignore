@@ -45,3 +45,8 @@ test*csv
 *.fls
 *.log
 *.synctex.gz
+
+.cproject
+.idea/
+.project
+.settings/
