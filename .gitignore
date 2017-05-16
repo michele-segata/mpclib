@@ -29,3 +29,12 @@
 *.exe
 *.out
 *.app
+
+# Built output
+build/
+cmake-build-debug/
+cmake-build-release/
+
+# Test files
+test*pdf
+test*csv
