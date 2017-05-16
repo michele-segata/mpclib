@@ -64,6 +64,12 @@ s.t.
 
 #include "Array.hh"
 
+// Utility functions for printing vectors and matrices
+void print_matrix(const char name[], const Matrix<double>& A, int n = -1, int
+m = -1);
+
+void print_vector(const char name[], const Vector<double>& v, int n = -1);
+
 double solve_quadprog(Matrix<double>& G, Vector<double>& g0, 
                       const Matrix<double>& CE, const Vector<double>& ce0,  
                       const Matrix<double>& CI, const Vector<double>& ci0, 
