@@ -7,7 +7,7 @@ the embedded [QuadProg++](https://github.com/liuq/QuadProgpp) library.
 The library defines a very simple interface that can be used to enable control
 and output constraints, slack variables, minimization weights, etc. In turn, the
 MPC interface uses the `QuadraticProblem` and the `Constraint` classes to easily
-define constraints and add the to the minimization problem.
+define constraints and add them to the minimization problem.
 
 Please be aware that this software is still in its early life. It works fine but
 it is not complete. The software still doesn't provide useful errors or
@@ -37,7 +37,7 @@ The library includes other open source software (please see the LICENSE file):
 
  * [QuadProg++](https://github.com/liuq/QuadProgpp): this is the library that
    solves the quadratic optimization problem;
- * [TCLAP](https://github.com/eile/tclap): this is command line arguments
+ * [TCLAP](https://github.com/eile/tclap): this is a command line arguments
    parsing library that is used in the sample program;
 
 ## Contribution
