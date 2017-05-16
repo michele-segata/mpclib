@@ -1,22 +1,12 @@
-# This software may be modified and distributed under the terms
-# of the MIT license.  See the LICENSE file for details.
+# add additional include directories
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
-file(GLOB sources *.cc)
-file(GLOB headers *.hh)
-set(library_sources ${sources})
-list(REMOVE_ITEM library_sources ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
-add_library(quadprog STATIC ${library_sources} ${headers})
-set_property(TARGET quadprog PROPERTY POSITION_INDEPENDENT_CODE 1)
-set_property(TARGET quadprog PROPERTY PUBLIC_HEADER ${headers})
+# add TCLAP files to sources
+file(GLOB tclap_sources *.h)
 
-add_executable(main main.cc ${headers})
-target_link_libraries(main quadprog)
+set(library_sources ${tclap_sources} Array.hh Array.cc
+    QuadProg++.cc QuadProg++.hh Variable.cc Variable.h Constraint.cc
+    Constraint.h matrix_utils.cc matrix_utils.h QuadraticProblem.cc
+    QuadraticProblem.h MPCProblem.cc MPCProblem.h)
 
-install(TARGETS quadprog
-  EXPORT quadprog-targets
-  RUNTIME DESTINATION bin
-  PUBLIC_HEADER DESTINATION include/QuadProg++
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
-
-install(EXPORT quadprog-targets DESTINATION cmake)
+add_executable(test-mpc test-mpc.cc ${library_sources})
