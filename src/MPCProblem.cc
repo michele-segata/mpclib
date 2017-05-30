@@ -567,6 +567,13 @@ double MPCProblem::solve_mpc(Vector<double> &arg) {
     return qp.solve_problem(arg);
 }
 
+bool MPCProblem::is_feasible(double result) {
+    if (std::numeric_limits<double>::has_infinity)
+        return !std::isinf(result);
+    else
+        return result < 1.0E300;
+}
+
 Matrix<double> MPCProblem::get_state_evolution(const Matrix<double> &C,
                                                const Vector<double> &solution) {
     int samples = T + 1;

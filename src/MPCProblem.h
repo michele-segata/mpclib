@@ -358,6 +358,15 @@ public:
     double solve_mpc(Vector<double> &arg);
 
     /**
+     * Returns whether the return value of solve_mpc() is valid or if the
+     * problem is infeasible.
+     * @param result the minimum value computed by solve_mpc
+     * @return true if the problem was feasible and the result is the minimum,
+     * false if the problem was not feasible
+     */
+    bool is_feasible(double result);
+
+    /**
      * Given a certain output matrix and the solution to the problem, computes
      * the evolution of the system. The function simply computes
      * y_k = C * (A * x_k + B * u_k), for k = 0..T
