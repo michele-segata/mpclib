@@ -329,6 +329,18 @@ bool MPCProblem::set_initial_control(const Vector<double> &u0) {
     return true;
 }
 
+bool MPCProblem::update_initial_control(const Vector<double> &u0) {
+    if (u0.size() != p) {
+        print_message("u0 length is not compatible with the size of the "
+                      "state vector\n");
+        return false;
+    }
+    init_u = u0;
+    init_control.set_known_term(init_u);
+    qp.update_equality_constraint(init_control, false, true);
+    return true;
+}
+
 bool MPCProblem::set_reference_vector(const Vector<double> &r) {
     if (r.size() != q) {
         print_message("r length is not compatible with the size of the "

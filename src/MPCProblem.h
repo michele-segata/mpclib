@@ -210,7 +210,7 @@ public:
      * @return false if the size of the given vector is incompatible, true
      * otherwise
      */
-    bool update_initial_control(const Vector<double> &x0);
+    bool update_initial_control(const Vector<double> &u0);
 
     /**
      * Sets the reference value
