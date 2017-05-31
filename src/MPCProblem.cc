@@ -66,6 +66,12 @@ void MPCProblem::setup_variables() {
         qp.add_variable(eps_du);
         this->eps_du = Var(eps_du);
     }
+    if (terminal_constraint && terminal_slack) {
+        // slack on terminal constraint
+        Variable *eps_t = qp.vector_variable(1, "eps_t");
+        qp.add_variable(eps_t);
+        this->eps_t = Var(eps_t);
+    }
     s = qp.get_main_variable();
 }
 
@@ -98,6 +104,8 @@ void MPCProblem::setup_problem() {
     Matrix<double> n_y_slack_M = -y_slack_M;
     Matrix<double> u_slack_M(1, p, 1);
     Matrix<double> n_u_slack_M = -u_slack_M;
+    Matrix<double> t_slack_M(1, q, 1);
+    Matrix<double> n_t_slack_M = -t_slack_M;
     // add initial state constraint: x0 = x*
     init_state.set_variable(s);
     init_state.set_constraint_variable(x0, identity(n));
@@ -134,10 +142,27 @@ void MPCProblem::setup_problem() {
     }
     // terminal condition constraint: e_T = 0
     if (terminal_constraint) {
-        Constraint terminal(s);
-        terminal.set_constraint_variable(e[T], Iq);
-        terminal.set_known_term(zero_vector(q));
-        qp.add_equality_constraint(terminal);
+        if (!terminal_slack) {
+            Constraint terminal(s);
+            terminal.set_constraint_variable(e[T], Iq);
+            terminal.set_known_term(zero_vector(q));
+            qp.add_equality_constraint(terminal);
+        }
+        else {
+            // -eps_t <= e_T <= eps_t
+            // e_T - eps_t <= 0
+            Constraint terminal1(s);
+            terminal1.set_constraint_variable(e[T], Iq);
+            terminal1.set_constraint_variable(eps_t, n_t_slack_M);
+            terminal1.set_known_term(zero_vector(q));
+            qp.add_leq_constraint(terminal1);
+            // e_T + eps_t >= 0
+            Constraint terminal2(s);
+            terminal2.set_constraint_variable(e[T], Iq);
+            terminal2.set_constraint_variable(eps_t, t_slack_M);
+            terminal2.set_known_term(zero_vector(q));
+            qp.add_geq_constraint(terminal2);
+        }
     }
 
     // control constraints

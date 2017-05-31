@@ -67,6 +67,8 @@ private:
     bool control_slack;
     // enable/disable slack variable on control derivative constraint
     bool control_derivative_slack;
+    // enable/disable slack variable on terminal constraint
+    bool terminal_slack;
     // indicates whether the problem setup is already done
     bool problem_setup;
 
@@ -86,6 +88,8 @@ private:
     Var eps_u;
     // slack variable on control derivative
     Var eps_du;
+    // slack variable on terminal constraint
+    Var eps_t;
 
     // constraint on initial state
     Constraint init_state;
@@ -139,13 +143,16 @@ public:
      * constraints
      * @param control_derivative_slack enable/disable slack variable on
      * control derivative constraints
+     * @param terminal_slack enable/disable slack variable on the terminal
+     * constraint. If the terminal constraint is disabled, this parameter is
+     * ignored
      * @param debug enable/disable debug output on stderr
      */
     MPCProblem(int T, int n, int p, int q, int q2, double ts,
                bool minimize_du, bool terminal_constraint, bool output_slack,
                bool control_slack, bool control_derivative_slack,
-               bool debug = false) : s(0), x0(0), e(0), u(0), du(0), eps_y(0),
-               eps_u(0), eps_du(0) {
+               bool terminal_slack, bool debug = false) : s(0), x0(0), e(0),
+               u(0), du(0), eps_y(0), eps_u(0), eps_du(0), eps_t(0) {
         this->T = T;
         this->n = n;
         this->p = p;
@@ -157,6 +164,7 @@ public:
         this->output_slack = output_slack;
         this->control_slack = control_slack;
         this->control_derivative_slack = control_derivative_slack;
+        this->terminal_slack = terminal_slack;
         this->debug = debug;
         this->problem_setup = false;
         setup_variables();
