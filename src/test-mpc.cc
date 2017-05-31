@@ -104,6 +104,9 @@ int main(int argc, char** argv) {
                  "double");
     VAD out_slack("s", "out-slack", "slack variable weight for output bounds. "
                   "Set to 0 for disabling it", false, 0, "double");
+    VAD terminal_slack("f", "terminal-slack", "slack variable weight for "
+                       "terminal constraint. Set to 0 for disabling it", false,
+                       0, "double");
     VAD tau("t", "tau", "actuation lag in seconds", false, 0.5, "double");
     VAI horizon("T", "horizon", "time horizon in steps", false, 60, "int");
     VAD u_weight("u", "control-weight", "weight for control variables", false,
@@ -139,6 +142,7 @@ int main(int argc, char** argv) {
         cmd.add(u_slack);
         cmd.add(du_slack);
         cmd.add(out_slack);
+        cmd.add(terminal_slack);
 
         // Parse the argv array.
         cmd.parse(argc, argv);
@@ -194,11 +198,13 @@ int main(int argc, char** argv) {
     bool control_slack = !ISZERO(u_slack.getValue());
     // enable/disable slack on control derivative limits
     bool control_derivative_slack = !ISZERO(du_slack.getValue());
+    // enable/disable slack on control derivative limits
+    bool term_slack = !ISZERO(terminal_slack.getValue());
 
     // instantiate the problem solver
     MPCProblem mpc(T, n, p, q, q2, ts, minimize_du, terminal_constraint,
                    output_slack, control_slack, control_derivative_slack,
-                   debug.getValue());
+                   term_slack, debug.getValue());
 
     // set state space matrices
     mpc.set_state_space_matrices(A, B, C1, C2);
@@ -242,6 +248,8 @@ int main(int argc, char** argv) {
     Vector<double> Qu_slack(u_slack.getValue(), 1);
     // weight for control derivative slack
     Vector<double> Qdu_slack(du_slack.getValue(), 1);
+    // weight for control terminal slack
+    Vector<double> Qt_slack(terminal_slack.getValue(), q);
 
     // merge together all weight vectors...
     Vector<double> Qv(Qx);
@@ -255,6 +263,8 @@ int main(int argc, char** argv) {
         Qv = bind_vectors(Qv, Qu_slack);
     if (control_derivative_slack)
         Qv = bind_vectors(Qv, Qdu_slack);
+    if (term_slack)
+        Qv = bind_vectors(Qv, Qt_slack);
     // and create the diagonal matrix of weights
     Matrix<double> Q = diag(Qv);
     mpc.seq_Q_matrix(Q);
