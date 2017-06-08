@@ -198,7 +198,7 @@ void MPCProblem::setup_problem() {
             Constraint du_min_c(s);
             du_min_c.set_constraint_variable(u[0], Ip);
             if (control_derivative_slack)
-                du_min_c.set_constraint_variable(eps_u, u_slack_M);
+                du_min_c.set_constraint_variable(eps_du, u_slack_M);
             du_min_c.set_known_term(du_min + init_u);
             qp.add_geq_constraint(du_min_c);
             c_du_min.push_back(du_min_c);
@@ -208,7 +208,7 @@ void MPCProblem::setup_problem() {
             du_min_c.set_constraint_variable(u[k + 1], Ip);
             du_min_c.set_constraint_variable(u[k], nIp);
             if (control_derivative_slack)
-                du_min_c.set_constraint_variable(eps_u, u_slack_M);
+                du_min_c.set_constraint_variable(eps_du, u_slack_M);
             du_min_c.set_known_term(du_min);
             qp.add_geq_constraint(du_min_c);
             c_du_min.push_back(du_min_c);
@@ -272,13 +272,13 @@ void MPCProblem::setup_problem() {
     // if used, slack variables must be greater than 0
     if (control_slack) {
         Constraint u_slack(s);
-        u_slack.set_constraint_variable(eps_y, 1);
+        u_slack.set_constraint_variable(eps_u, 1);
         u_slack.set_known_term(0);
         qp.add_geq_constraint(u_slack);
     }
     if (control_derivative_slack) {
         Constraint du_slack(s);
-        du_slack.set_constraint_variable(eps_y, 1);
+        du_slack.set_constraint_variable(eps_du, 1);
         du_slack.set_known_term(0);
         qp.add_geq_constraint(du_slack);
     }
