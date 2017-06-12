@@ -108,11 +108,6 @@ private:
     bool debug;
 
     /**
-     * Sets up the quadratic programming problem to solve
-     */
-    void setup_problem();
-
-    /**
      * Sets up the variables
      */
     void setup_variables();
@@ -169,6 +164,16 @@ public:
         this->problem_setup = false;
         setup_variables();
     }
+
+    /**
+     * Sets up the quadratic programming problem to solve. This method can be
+     * invoked after setting state space matrices and constraint to construct
+     * problem matrices and vectors. If not called prior invoking solve_mpc(),
+     * the library automatically calls the method before solving the problem.
+     * Be aware that, before setup_problem() is called, it is not possible to
+     * invoke update methods such as update_reference_vector().
+     */
+    void setup_problem();
 
     /**
      * Sets the A, B, and C matrices
