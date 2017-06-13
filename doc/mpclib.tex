@@ -36,6 +36,7 @@
 \newcommand{\epsy}{\ensuremath{\epsilon_{y}}\xspace}
 \newcommand{\epsu}{\ensuremath{\epsilon_{u}}\xspace}
 \newcommand{\epsdu}{\ensuremath{\epsilon_{\dot{u}}}\xspace}
+\newcommand{\epst}{\ensuremath{\epsilon_T}\xspace}
 \newcommand{\code}[1]{\texttt{#1}\xspace}
 \newcommand{\R}{\ensuremath{\mathbb{R}\xspace}}
 \newcommand{\ts}{\ensuremath{t_s}}
@@ -65,13 +66,13 @@ In general, the \code{MPCProblem} class solves the following quadratic optimizat
 with
 \begin{equation}
     \label{eq:s}
-    s = [\bm{e}, \bm{u}, \bm{\dot{u}}, \epsy, \epsy, \epsdu]
+    s = [\bm{e}, \bm{u}, \bm{\dot{u}}, \epsy, \epsy, \epsdu, \epst]
 \end{equation}
 subject to
 \begin{align}
     \uu{0} &= \bm{u}^* \label{eq:u0}\\
     \ek &= \Co\xk - \rk,\quad k = 0,\dots,T \label{eq:error}\\
-    \ee{T} &= 0 \label{eq:terminal}\\
+    -\epst &\leq \ee{T} \leq \epst \label{eq:terminal}\\
     \ukk &= \uk + \duk \cdot \ts,\quad k = 0,\dots,T-1 \label{eq:duk}\\
     \Cc\xkk &\leq \ymax + \epsy,\quad k = 0,\dots,T-1 \label{eq:ymax}\\
     \Cc\xkk &\geq \ymin - \epsy,\quad k = 0,\dots,T-1 \label{eq:ymin}\\
@@ -82,6 +83,7 @@ subject to
     \epsy &\geq 0 \label{eq:epsy}\\
     \epsu &\geq 0 \label{eq:epsu}\\
     \epsdu &\geq 0 \label{eq:epsdu}\\
+    \epst &\geq 0 \label{eq:epst}\\
 \end{align}
 where
 \begin{equation}
@@ -112,16 +114,17 @@ The $s$ variable is composed by a set of subvariables:
     \item \epsy: slack variable for the violation of output constraints. This is optional and can be disabled when instantiating the problem. This removes the slack variable from the optimization problem and allows no constraint violation.
     \item \epsu: slack variable for the violation of control constraints. This is optional and can be disabled when instantiating the problem. This removes the slack variable from the optimization problem and allows no constraint violation.
     \item \epsdu: slack variable for the violation of control derivative constraints. This is optional and can be disabled when instantiating the problem. This removes the slack variable from the optimization problem and allows no constraint violation.
+	\item \epst: slack variable for the terminal constraint. This is optional and can be disabled when instantiating the problem. This removes the slack variable from the optimization problem and transforms the terminal constraint into $\ee{T} = 0$.
 \end{itemize}
 
 With respect to the constraints, the interpretation is the following:
 \begin{itemize}
-    \item \cref{eq:terminal}: this is called the terminal constraint and indicates that, at the end of the time horizon, we want our output error to be zero. Notice that this might make the problem unfeasible, e.g., when setting a very small time horizon. For this reason, the constraint can be disabled.
+    \item \cref{eq:terminal}: this is called the terminal constraint and indicates that, at the end of the time horizon, we want our output error to be zero, or very close to it. Notice that this might make the problem unfeasible, e.g., when setting a very small time horizon. For this reason, the constraint can be disabled. Alternatively to disabling the constraint, it is possible to enable a slack variable for it, so that the constraint can be violated but at a certain cost.
     \item \cref{eq:duk}: this constraint simply defines that two successive control actions differ by the control derivative. When the minimization on the control derivative is disabled, this constraint is not used.
     \item \cref{eq:ymax,eq:ymin}: constraints on output limiting the maximum and the minimum output value. Notice that we use a different output matrix than the one of the error constraint (\cref{eq:error}), which we call \Cc. The reason is simple: imagine that our state is composed by the acceleration and the speed of a vehicle and that we want to reach a target speed while limiting the acceleration. If we use the same output matrix this is not possible (if not with some ugly hack), but by using two different output matrices we increase the flexibility while lowering the computational effort. In the document and in the code, $\Cc \in \R^{q_2 \times n}$. These constraints can be violated if the slack variable for the output is enabled. If the slack variable on output is not enabled, then the \epsy variable is not considered.
     \item \cref{eq:umax,eq:umin}: constraints on control limiting the maximum and the minimum control value. These constraints can be violated if the slack variable for the control is enabled. If the slack variable on control is not enabled, then the \epsu variable is not considered.
     \item \cref{eq:dumax,eq:dumin}: constraints on control derivative limiting the maximum and the minimum control derivative value. The limit is multiplied by the sampling time \ts, so changing the sampling time doesn't require the user to change the \dumax and the \dumin values. These constraints can be violated if the slack variable for the control derivative is enabled. If the slack variable on control derivative is not enabled, then the \epsu variable is not considered.
-    \item \cref{eq:epsy,eq:epsu,eq:epsdu}: these constraints simply force the slack variables to be positive.
+    \item \cref{eq:epsy,eq:epsu,eq:epsdu,eq:epst}: these constraints simply force the slack variables to be positive.
 \end{itemize}
 
 Finally, \cref{eq:xk} defines \xk in terms of the variables of the problem.
