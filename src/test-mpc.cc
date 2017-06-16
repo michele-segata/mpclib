@@ -64,8 +64,10 @@
 #include "tclap/SwitchArg.h"
 #include "tclap/ArgException.h"
 
+using namespace std;
+
 #ifndef ISZERO
-#define ISZERO(x) (std::abs(x) < 1e-15)
+#define ISZERO(x) (abs(x) < 1e-15)
 #endif
 
 typedef TCLAP::SwitchArg SA;
@@ -148,7 +150,7 @@ int main(int argc, char** argv) {
         cmd.parse(argc, argv);
     }
     catch (TCLAP::ArgException &e) {
-        std::cerr << "error: " << e.error() << " for arg " << e.argId() << "\n";
+        cerr << "error: " << e.error() << " for arg " << e.argId() << "\n";
         return 1;
     }
 
@@ -291,16 +293,16 @@ int main(int argc, char** argv) {
 
 Matrix<double> get_A(double ts, double tau) {
     Matrix<double> A(2, 2);
-    A[0][0] = std::exp(-ts/tau);
+    A[0][0] = exp(-ts/tau);
     A[0][1] = 0;
-    A[1][0] = tau * (1 - std::exp(-ts/tau));
+    A[1][0] = tau * (1 - exp(-ts/tau));
     A[1][1] = 1;
     return A;
 }
 
 Matrix<double> get_B(double ts, double tau) {
     Matrix<double> B(2, 1);
-    B[0][0] = 1 - std::exp(-ts/tau);
-    B[1][0] = ts + tau * (std::exp(-ts/tau) - 1);
+    B[0][0] = 1 - exp(-ts/tau);
+    B[1][0] = ts + tau * (exp(-ts/tau) - 1);
     return B;
 }
