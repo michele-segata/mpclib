@@ -14,10 +14,11 @@ if (length(args) >= 1) {
 
 # load csv output
 d <- read.csv(csv.file)
+names(d) = c("n", "k", "a", "v", "u", "du")
 # sampling time
 ts = 0.1
 # add time to dataset
-d$time = 0:(nrow(d)-1) * ts
+d$time = d$n * ts + d$k * ts
 
 if (!interactive()) {
     pdf(pdf.file, width=16/2.8, height=9/2.8)

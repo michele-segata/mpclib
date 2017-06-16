@@ -106,6 +106,8 @@ int main(int argc, char** argv) {
                  "double");
     VAD out_slack("s", "out-slack", "slack variable weight for output bounds. "
                   "Set to 0 for disabling it", false, 0, "double");
+    VAI simulate("S", "simulate", "simulates the system for the specified "
+                 "number of steps", false, 30, "int");
     VAD terminal_slack("f", "terminal-slack", "slack variable weight for "
                        "terminal constraint. Set to 0 for disabling it", false,
                        0, "double");
@@ -145,6 +147,7 @@ int main(int argc, char** argv) {
         cmd.add(du_slack);
         cmd.add(out_slack);
         cmd.add(terminal_slack);
+        cmd.add(simulate);
 
         // Parse the argv array.
         cmd.parse(argc, argv);
@@ -271,21 +274,74 @@ int main(int argc, char** argv) {
     Matrix<double> Q = diag(Qv);
     mpc.seq_Q_matrix(Q);
 
-    // solve the problem
+    // variables including problem solution
     Vector<double> solution;
     Matrix<double> output;
-    double min = mpc.solve_mpc(solution);
-    output = mpc.get_state_evolution(identity(n), solution);
+    double min;
 
-    // write the result to stdout (acceleration, speed, control and control
-    // derivative)
-    std::cout << "a,v,u,du\n";
-    for (int i = 0; i <= T; i++) {
-        std::cout << output[i][0] << "," <<
-                     output[i][1] << "," <<
-                     solution[u[i].get_position()] << "," <<
-                     (minimize_du ? solution[du[i].get_position()] : 0);
-        std::cout << "\n";
+    // number of simulation steps to run. if the variable is not set, we do
+    // only one
+    int sim_steps = 1;
+    if (simulate.isSet())
+        sim_steps = simulate.getValue();
+
+    // write the result to stdout (sim step, solution step, state, control,
+    // and control derivative)
+
+    // write csv header
+    cout << "n,k,";
+    for (int i = 0; i < n; i++)
+        cout << "x" << i << ",";
+    for (int i = 0; i < p; i++)
+        cout << "u" << i << ",";
+    for (int i = 0; i < p; i++) {
+        cout << "du" << i;
+        if (i != p - 1)
+            cout << ",";
+    }
+    cout << "\n";
+
+    for (int t = 0; t < sim_steps; t++) {
+
+        // solve the problem
+        min = mpc.solve_mpc(solution);
+        if (!mpc.is_feasible(min)) {
+            // if unfeasible, no need to continue
+            break;
+        }
+        // get the evolution of the state given the solution
+        output = mpc.get_state_evolution(identity(n), solution);
+
+        for (int k = 0; k <= T; k++) {
+
+            // output sim time and solution step
+            cout << t << "," << k << ",";
+            // output state variables
+            for (int i = 0; i < output.ncols(); i++)
+                cout << output[k][i] << ",";
+            // output control variables
+            for (int i = 0; i < u[k].get_size(); i++)
+                cout << solution[u[k][i].get_position()] << ",";
+            // output control derivative variables
+            for (int i = 0; i < du[k].get_size(); i++) {
+                if (minimize_du)
+                    cout << solution[du[k][i].get_position()];
+                else
+                    cout << 0;
+
+                if (i != du[k].get_size() - 1)
+                    cout << ",";
+            }
+            cout << "\n";
+        }
+
+        // update initial state and initial control for next simulation step
+        for (int i = 0; i < t; i++)
+            init_x[i] = output[1][i];
+        for (int i = 0; i < p; i++)
+            init_u[i] = solution[u[1][i].get_position()];
+        mpc.update_initial_state(init_x);
+        mpc.update_initial_control(init_u);
     }
 
     return 0;
