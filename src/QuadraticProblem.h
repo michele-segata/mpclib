@@ -103,7 +103,9 @@ public:
         debug = debug_output;
     }
 
-    ~QuadraticProblem() {}
+    ~QuadraticProblem() {
+        delete vx;
+    }
 
     /**
      * Generates a vector variable. For example, if you have a variable x
