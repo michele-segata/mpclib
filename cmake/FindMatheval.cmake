@@ -1,30 +1,13 @@
-# use pkg-config to get the directories and then use these values
-# in the FIND_PATH() and FIND_LIBRARY() calls
-find_package( PkgConfig )
-if( PKG_CONFIG_FOUND )
-    pkg_check_modules( Matheval libmatheval QUIET )
-endif()
+FIND_PATH(MATHEVAL_INCLUDE_DIR matheval.h)
 
-set( Matheval_DEFINITIONS ${Matheval_CFLAGS_OTHER} )
+SET(MATHEVAL_NAMES ${MATHEVAL_NAMES} matheval)
+FIND_LIBRARY(MATHEVAL_LIBRARY NAMES ${MATHEVAL_NAMES} )
 
-find_path( Matheval_INCLUDE_DIRS
-        NAMES matheval.h
-        HINTS
-        ${Matheval_INCLUDEDIR}
-        ${Matheval_INCLUDE_DIRS}
-        )
-
-find_library( Matheval_LIBRARIES
-        NAMES matheval
-        HINTS
-        ${Matheval_LIBDIR}
-        ${Matheval_LIBRARY_DIRS}
-        )
-
-# handle the QUIETLY and REQUIRED arguments and set Matheval_FOUND to TRUE if
+# handle the QUIETLY and REQUIRED arguments and set MATHEVAL_FOUND to TRUE if
 # all listed variables are TRUE
-include( FindPackageHandleStandardArgs )
-find_package_handle_standard_args( Matheval DEFAULT_MSG
-        Matheval_LIBRARIES Matheval_INCLUDE_DIRS)
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATHEVAL DEFAULT_MSG MATHEVAL_LIBRARY MATHEVAL_INCLUDE_DIR)
 
-mark_as_advanced(Matheval_INCLUDE_DIRS Matheval_LIBRARIES)
+IF(MATHEVAL_FOUND)
+    SET( MATHEVAL_LIBRARIES ${MATHEVAL_LIBRARY} )
+ENDIF(MATHEVAL_FOUND)

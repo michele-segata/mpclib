@@ -19,7 +19,7 @@ endif()
 if (${ENABLE_CONFIG_FILE})
     set(library_sources ${library_sources} ConfigLoader.cpp ConfigLoader.h
         MathEvaluator.cpp MathEvaluator.h)
-    set(LIBS ${LIBS} ${Matheval_LIBRARIES} ${LIBCONFIGPP_LIBRARIES})
+    set(LIBS ${LIBS} ${MATHEVAL_LIBRARIES} ${LIBCONFIGPP_LIBRARIES})
 endif()
 
 add_executable(test-mpc test-mpc.cc ${library_sources})
