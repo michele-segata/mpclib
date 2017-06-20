@@ -53,7 +53,7 @@ bool ConfigLoader::generateMatrices(const vector<double> &vA,
                                     const vector<double> &vB,
                                     const vector<double> &vC1,
                                     const vector<double> &vC2,
-                                    const vector<double> &r) {
+                                    const vector<double> &ref) {
     int n = sqrt(vA.size());
     if (n * n != vA.size()) {
         logFile << "Matrix A is not square\n";
@@ -97,13 +97,13 @@ bool ConfigLoader::generateMatrices(const vector<double> &vA,
         for (int c  = 0; c < n; c++)
             C2[r][c] = vC2[r * n + c];
 
-    if (r.size() == 0 || r.size() % q != 0) {
+    if (ref.size() == 0 || ref.size() % q != 0) {
         logFile << "The reference vector size must be a multiple of q=" << q
                 << "\n";
     }
-    ref_vector.resize(r.size());
-    for (int i = 0; i < r.size(); i++)
-        ref_vector[i] = r[i];
+    ref_vector.resize(ref.size());
+    for (int i = 0; i < ref.size(); i++)
+        ref_vector[i] = ref[i];
 
     return true;
 

@@ -239,10 +239,15 @@ public:
 
     /**
      * Generates system matrices starting from loaded vectors
+     * @param vA vector representing the continuous time state matrix
+     * @param vB vector representing the continuous time control matrix
+     * @param vC1 vector representing output matrix C1
+     * @param vC2 vector representing output matrix C2
+     * @param ref reference vector
      */
     bool generateMatrices(const vector<double> &vA, const vector<double> &vB,
                           const vector<double> &vC1, const vector<double> &vC2,
-                          const vector<double> &r);
+                          const vector<double> &ref);
 
     /**
      * Gets the discretized state matrix
