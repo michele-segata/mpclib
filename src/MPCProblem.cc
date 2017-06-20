@@ -106,6 +106,7 @@ void MPCProblem::setup_problem() {
     Matrix<double> n_u_slack_M = -u_slack_M;
     Matrix<double> t_slack_M(1, q, 1);
     Matrix<double> n_t_slack_M = -t_slack_M;
+    Vector<double> ref(q);
     // add initial state constraint: x0 = x*
     init_state.set_variable(s);
     init_state.set_constraint_variable(x0, identity(n));
@@ -123,7 +124,17 @@ void MPCProblem::setup_problem() {
         error.set_constraint_variable(x0, nC1Ak[k]);
         for (int i = 0; i <= k - 1; i++)
             error.set_constraint_variable(u[i], nC1AkB[k-i-1]);
-        error.set_known_term(-r);
+        if (r.size() == q) {
+            // user specified a single reference, so we simply repeat it
+            error.set_known_term(-r);
+        }
+        else {
+            // if there is a signal to track, then copy the part of the signal
+            // we care about in this step
+            for (int i = 0; i < q; i++)
+                ref[i] = -r[k * q + i];
+            error.set_known_term(ref);
+        }
         qp.add_equality_constraint(error);
         // save the constraint to be able to modify the reference vector
         // afterwards
@@ -367,7 +378,7 @@ bool MPCProblem::update_initial_control(const Vector<double> &u0) {
 }
 
 bool MPCProblem::set_reference_vector(const Vector<double> &r) {
-    if (r.size() != q) {
+    if (r.size() != q && r.size() < q * (T+1)) {
         print_message("r length is not compatible with the size of the "
                       "output vector\n");
         return false;
