@@ -53,7 +53,7 @@ double solve_quadprog(Matrix<double>& G, Vector<double>& g0,
     msg << "The matrix G is not a squared matrix (" << G.nrows() << " x " << G.ncols() << ")";
     throw std::logic_error(msg.str());
   }
-  if (CE.nrows() != n)
+  if (CE.nrows() != n && CE.nrows() != 0)
   {
     msg << "The matrix CE is incompatible (incorrect number of rows " << CE.nrows() << " , expecting " << n << ")";
     throw std::logic_error(msg.str());
@@ -63,7 +63,7 @@ double solve_quadprog(Matrix<double>& G, Vector<double>& g0,
     msg << "The vector ce0 is incompatible (incorrect dimension " << ce0.size() << ", expecting " << p << ")";
     throw std::logic_error(msg.str());
   }
-  if (CI.nrows() != n)
+  if (CI.nrows() != n && CI.nrows() != 0)
   {
     msg << "The matrix CI is incompatible (incorrect number of rows " << CI.nrows() << " , expecting " << n << ")";
     throw std::logic_error(msg.str());

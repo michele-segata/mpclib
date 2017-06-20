@@ -22,8 +22,6 @@ bool Constraint::set_variable(const Var &x) {
         return false;
     this->x = x;
     var_set = true;
-    // init constraint matrix
-    A.resize(0, x.get_size());
     return true;
 }
 
@@ -83,6 +81,7 @@ bool Constraint::set_known_term(const Vector<double> &t) {
     }
     if (!initialized) {
         A.resize(0, t.size(), x.get_size());
+        initialized = true;
     } else {
         if (t.size() != A.nrows()) {
             std::cerr << "The length of the known term vector ("
