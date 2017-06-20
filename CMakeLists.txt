@@ -1,3 +1,4 @@
+project(MPCLib CXX)
 cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -14,5 +15,4 @@ else(${CMAKE_BUILD_TYPE} MATCHES "Release")
     message(STATUS "Configuring project in " ${CMAKE_BUILD_TYPE} " mode")
 endif()
 
-project(MPCLib CXX)
 add_subdirectory(src)
