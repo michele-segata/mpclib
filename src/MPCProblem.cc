@@ -20,6 +20,7 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_integration.h>
 #endif
+#include <limits>
 
 void MPCProblem::print_message(const std::string &msg) {
     if (debug)
