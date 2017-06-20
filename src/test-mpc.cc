@@ -373,7 +373,7 @@ int main(int argc, char** argv) {
         }
 
         // update initial state and initial control for next simulation step
-        for (int i = 0; i < t; i++)
+        for (int i = 0; i < n; i++)
             init_x[i] = output[1][i];
         for (int i = 0; i < p; i++)
             init_u[i] = solution[u[1][i].get_position()];
