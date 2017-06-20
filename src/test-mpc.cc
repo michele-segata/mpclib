@@ -63,6 +63,9 @@
 #include "tclap/ValueArg.h"
 #include "tclap/SwitchArg.h"
 #include "tclap/ArgException.h"
+#ifdef ENABLE_CONFIG_FILE
+#include "ConfigLoader.h"
+#endif
 
 using namespace std;
 
@@ -73,6 +76,7 @@ using namespace std;
 typedef TCLAP::SwitchArg SA;
 typedef TCLAP::ValueArg<double> VAD;
 typedef TCLAP::ValueArg<int> VAI;
+typedef TCLAP::ValueArg<string> VAS;
 
 /**
  * Get the discrete time version of the state matrix
@@ -95,6 +99,10 @@ int main(int argc, char** argv) {
     // define command line arguments
     VAD a_min("a", "a-min", "acceleration lower bound", false, -1e9, "double");
     VAD a_max("b", "a-max", "acceleration upper bound", false, 1e9, "double");
+#ifdef ENABLE_CONFIG_FILE
+    VAS config("c", "config-file", "config file defining continuous time "
+               "state space matrices", false, "", "string");
+#endif
     VAD du_weight("d", "control-derivative-weight", "weight for control "
                   "derivative variables", false, 1.0, "double");
     VAD error_weight("e", "error-weight", "weight for speed error variables",
@@ -148,6 +156,9 @@ int main(int argc, char** argv) {
         cmd.add(out_slack);
         cmd.add(terminal_slack);
         cmd.add(simulate);
+#ifdef ENABLE_CONFIG_FILE
+        cmd.add(config);
+#endif
 
         // Parse the argv array.
         cmd.parse(argc, argv);
@@ -172,18 +183,44 @@ int main(int argc, char** argv) {
 
     //state, input, output, and constraint output matrices
     Matrix<double> A, B, C1, C2;
+    //reference vector
+    Vector<double> ref;
 
-    A = get_A(ts, tau.getValue());
-    B = get_B(ts, tau.getValue());
-    C1 = get_matrix("0,1", q, n);
-    C2 = get_matrix("1,0", q2, n);
+#ifdef ENABLE_CONFIG_FILE
+    if (config.isSet()) {
+        ConfigLoader cfg(config.getValue());
+        if (!cfg.parseConfig())
+            return 1;
+        if (!cfg.loadConfiguration())
+            return 1;
+        //continuous time state space matrices
+        Matrix<double> Ac, Bc;
+        Ac = cfg.get_A();
+        Bc = cfg.get_B();
+        C1 = cfg.get_C1();
+        C2 = cfg.get_C2();
+        ref = cfg.get_ref_vector();
+        n = Ac.nrows();
+        p = Bc.ncols();
+        q = C1.nrows();
+        q2 = C2.nrows();
+        MPCProblem::discretize_state_space(Ac, Bc, A, B, ts);
+    }
+    else {
+#endif
+        A = get_A(ts, tau.getValue());
+        B = get_B(ts, tau.getValue());
+        C1 = get_matrix("0,1", q, n);
+        C2 = get_matrix("1,0", q2, n);
+        //set reference speed as 1
+        ref.resize(1, q);
+
+#ifdef ENABLE_CONFIG_FILE
+    }
+#endif
 
     //initial state
     Vector<double> init_x(0.0, n), init_u(0.0, p);
-
-    //reference vector, speed = 1
-    Vector<double> ref;
-    ref.resize(1, q);
 
     // bounds
     Vector<double> ymin(a_min.getValue(), q2);

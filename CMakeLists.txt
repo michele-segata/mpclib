@@ -19,10 +19,16 @@ else(${CMAKE_BUILD_TYPE} MATCHES "Release")
 endif()
 
 FIND_PACKAGE(GSL)
+FIND_PACKAGE(Matheval)
+FIND_PACKAGE(Config)
 
 if (${GSL_FOUND})
     set(ENABLE_DISCRETIZATION TRUE)
     add_definitions(-DENABLE_DISCRETIZATION)
+    if (${LIBCONFIGPP_FOUND} AND ${MATHEVAL_FOUND})
+        set(ENABLE_CONFIG_FILE TRUE)
+        add_definitions(-DENABLE_CONFIG_FILE)
+    endif()
 endif()
 
 add_subdirectory(src)

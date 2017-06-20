@@ -15,5 +15,12 @@ set(library_sources ${tclap_sources} Array.hh Array.cc
 if (${ENABLE_DISCRETIZATION})
     set(LIBS ${LIBS} ${GSL_LIBRARIES})
 endif()
+
+if (${ENABLE_CONFIG_FILE})
+    set(library_sources ${library_sources} ConfigLoader.cpp ConfigLoader.h
+        MathEvaluator.cpp MathEvaluator.h)
+    set(LIBS ${LIBS} ${Matheval_LIBRARIES} ${LIBCONFIGPP_LIBRARIES})
+endif()
+
 add_executable(test-mpc test-mpc.cc ${library_sources})
 target_link_libraries(test-mpc ${LIBS})
