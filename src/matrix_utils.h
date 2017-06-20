@@ -20,6 +20,9 @@
 
 #include "Array.hh"
 #include <vector>
+#ifdef ENABLE_DISCRETIZATION
+#include <gsl/gsl_matrix.h>
+#endif
 
 /**
  * Copies the values of a matrix over a portion of another
@@ -208,5 +211,25 @@ void copy_vector(double *dst, const Matrix<double> &src);
  * @return the subvector of elements going from src[from] to src[from+length-1]
  */
 Vector<double> subvector(const Vector<double> &src, int from, int length);
+
+#ifdef ENABLE_DISCRETIZATION
+
+/**
+ * Converts a gsl matrix into a Matrix<double> object
+ * @param m pointer to gsl_matrix
+ * @return converted matrix
+ */
+Matrix<double> from_gsl(const gsl_matrix *m);
+
+/**
+ * Converts a Matrix<double> object into a gsl matrix. This function allocates
+ * the memory for the gsl matrix and it is a duty of the user to free the
+ * memory via the gsl_matrix_free() method
+ * @param m matrix object
+ * @return converted matrix
+ */
+gsl_matrix *to_gsl(const Matrix<double> &m);
+
+#endif
 
 #endif //MATRIX_UTILS_H

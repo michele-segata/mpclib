@@ -16,11 +16,96 @@
 //
 
 #include "MPCProblem.h"
+#ifdef ENABLE_DISCRETIZATION
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_integration.h>
+#endif
 
 void MPCProblem::print_message(const std::string &msg) {
     if (debug)
         std::cerr << msg;
 }
+
+#ifdef ENABLE_DISCRETIZATION
+
+double MPCProblem::exp_A_t(double t, void *p) {
+    // value to be returned
+    double v;
+    // get integration parameters
+    struct integrate_params *params = (struct integrate_params *)p;
+    // create a copy of the A matrix (we can't modify it)
+    gsl_matrix *M = gsl_matrix_alloc(params->A->size1, params->A->size2);
+    // matrix where we store the matrix exponential
+    gsl_matrix *exp_M = gsl_matrix_alloc(params->A->size1, params->A->size2);
+
+    // copy values of A into M
+    gsl_matrix_memcpy(M, params->A);
+    // compute M * x
+    gsl_matrix_scale(M, t);
+    // perform matrix exponentiation
+    gsl_linalg_exponential_ss(M, exp_M, 0);
+    // get only the value we care about
+    v = gsl_matrix_get(exp_M, params->r, params->c);
+
+    gsl_matrix_free(exp_M);
+    gsl_matrix_free(M);
+
+    return v;
+}
+
+bool MPCProblem::discretize_state_space(const Matrix<double> &A,
+                                        const Matrix<double> &B,
+                                        Matrix<double> &Ad, Matrix<double> &Bd,
+                                        double dt) {
+
+    // variables for gsl integration
+    gsl_integration_workspace *w = gsl_integration_workspace_alloc (10000);
+    gsl_function f;
+    double iv, err;
+    // convert A to a gsl matrix for computation
+    gsl_matrix *gsl_A = to_gsl(A);
+    gsl_matrix *gsl_scaled_A = to_gsl(A);
+    // discretized A matrix
+    gsl_matrix *gsl_Ad = gsl_matrix_alloc(gsl_A->size1, gsl_A->size2);
+    // result of the integral over the A matrix
+    gsl_matrix *gsl_Ai = gsl_matrix_alloc(gsl_A->size1, gsl_A->size2);
+    Matrix<double> Ai;
+
+    // compute A * dt
+    gsl_matrix_scale(gsl_scaled_A, dt);
+    // perform matrix exponentiation to obtain discretized A matrix
+    gsl_linalg_exponential_ss(gsl_scaled_A, gsl_Ad, 0);
+    // copy result to return matrix
+    Ad = from_gsl(gsl_Ad);
+
+    // set function to integrate
+    f.function = exp_A_t;
+    // set integration parameters
+    struct integrate_params p;
+    f.params = &p;
+    p.A = gsl_A;
+    for (int r = 0; r < gsl_A->size1; r++) {
+        for (int c = 0; c < gsl_A->size2; c++) {
+            p.r = r;
+            p.c = c;
+            gsl_integration_qags(&f, 0, dt, 0, 1e-7, 10000, w, &iv, &err);
+            gsl_matrix_set(gsl_Ai, r, c, iv);
+        }
+    }
+    Ai = from_gsl(gsl_Ai);
+    // multiply Ai by B to get Bd
+    Bd = multiply(Ai, B);
+
+    gsl_matrix_free(gsl_Ai);
+    gsl_matrix_free(gsl_Ad);
+    gsl_matrix_free(gsl_scaled_A);
+    gsl_matrix_free(gsl_A);
+    gsl_integration_workspace_free(w);
+
+    return true;
+}
+
+#endif
 
 void MPCProblem::setup_variables() {
     // x0 variable

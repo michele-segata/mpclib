@@ -118,6 +118,43 @@ private:
      */
     void print_message(const std::string &msg);
 
+#ifdef ENABLE_DISCRETIZATION
+
+    /**
+     * Struct used to pass parameters to the function being integrated for
+     * discretization
+     */
+    struct integrate_params {
+        // continuous time state matrix
+        const gsl_matrix *A;
+        // row on which we are doing the integration
+        int r;
+        // column on which we are doing the integration
+        int c;
+    };
+
+    /**
+     * Function on which we compute the integral for discretization. To
+     * discretize the control matrix we need to compute
+     *
+     * int_0^{dt} e^{A t} dt * B
+     *
+     * This function simply computes e^{A t} given A and t.
+     * The result of the integral over the matrix is a matrix, but the
+     * function being integrated must return a single value. To cope with this,
+     * we must repeat the integration operation for all rows and columns, so
+     * this function also requires the row and the column of the element that
+     * the function should return
+     *
+     * @param t integration variable
+     * @param p a pointer to a struct integrate_params, which includes the
+     * continuous time state matrix A and the row and column indexes
+     * @return the value of e^{A t}[r][c]
+     */
+    static double exp_A_t(double t, void *p);
+
+#endif
+
 public:
 
     /**
@@ -164,6 +201,25 @@ public:
         this->problem_setup = false;
         setup_variables();
     }
+
+#ifdef ENABLE_DISCRETIZATION
+
+    /**
+     * Discretizes a continuous time state space system
+     * @param A continuous time state matrix
+     * @param B continuous time control matrix
+     * @param Ad returned discrete time state matrix
+     * @param Bd returned discrete time control matrix
+     * @param dt sampling time in seconds
+     * @return true if the operation succeeds, false otherwise
+     */
+    static bool discretize_state_space(const Matrix<double> &A,
+                                       const Matrix<double> &B,
+                                       Matrix<double> &Ad, Matrix<double> &Bd,
+                                       double dt);
+
+#endif
+
 
     /**
      * Sets up the quadratic programming problem to solve. This method can be

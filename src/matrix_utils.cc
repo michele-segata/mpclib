@@ -231,3 +231,23 @@ Vector<double> subvector(const Vector<double> &src, int from, int length) {
         sub[i] = src[i+from];
     return sub;
 }
+
+#ifdef ENABLE_DISCRETIZATION
+
+Matrix<double> from_gsl(const gsl_matrix *m) {
+    Matrix<double> t(m->size1, m->size2);
+    for (int r = 0; r < m->size1; r++)
+        for (int c = 0; c < m->size2; c++)
+            t[r][c] = gsl_matrix_get(m, r, c);
+    return t;
+}
+
+gsl_matrix *to_gsl(const Matrix<double> &m) {
+    gsl_matrix *t = gsl_matrix_alloc(m.nrows(), m.ncols());
+    for (int r = 0; r < t->size1; r++)
+        for (int c = 0; c < t->size2; c++)
+            gsl_matrix_set(t, r, c, m[r][c]);
+    return t;
+}
+
+#endif
