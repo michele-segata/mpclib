@@ -2,7 +2,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 # add TCLAP files to sources
-file(GLOB tclap_sources *.h)
+file(GLOB tclap_sources tclap/*.h)
 
 set(library_sources ${tclap_sources} Array.hh Array.cc
     QuadProg++.cc QuadProg++.hh Variable.cc Variable.h Constraint.cc
