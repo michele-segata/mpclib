@@ -385,6 +385,7 @@ void MPCProblem::setup_problem() {
         out_slack.set_known_term(0);
         qp.add_geq_constraint(out_slack);
     }
+    problem_setup = true;
 }
 
 bool MPCProblem::set_state_space_matrices(const Matrix<double> &A,
@@ -694,7 +695,6 @@ double MPCProblem::solve_mpc(Vector<double> &arg) {
     // TODO: check whether things are set
     if (!problem_setup) {
         setup_problem();
-        problem_setup = true;
         if (debug)
             qp.write_information();
     }
