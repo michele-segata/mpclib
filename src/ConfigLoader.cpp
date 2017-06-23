@@ -53,7 +53,9 @@ bool ConfigLoader::generateMatrices(const vector<double> &vA,
                                     const vector<double> &vB,
                                     const vector<double> &vC1,
                                     const vector<double> &vC2,
-                                    const vector<double> &ref) {
+                                    const vector<double> &ref,
+                                    const vector<double> &x0,
+                                    const vector<double> &u0) {
     int n = sqrt(vA.size());
     if (n * n != vA.size()) {
         logFile << "Matrix A is not square\n";
@@ -106,6 +108,22 @@ bool ConfigLoader::generateMatrices(const vector<double> &vA,
     for (int i = 0; i < ref.size(); i++)
         ref_vector[i] = ref[i];
 
+    if (x0.size() != n) {
+        logFile << "The size of the x0 vector must be " << n << "\n";
+        return false;
+    }
+    init_x.resize(x0.size());
+    for (int i = 0; i < x0.size(); i++)
+        init_x[i] = x0[i];
+
+    if (u0.size() != p) {
+        logFile << "The size of the u0 vector must be " << p << "\n";
+        return false;
+    }
+    init_u.resize(u0.size());
+    for (int i = 0; i < u0.size(); i++)
+        init_u[i] = u0[i];
+
     return true;
 
 }
@@ -130,9 +148,17 @@ Vector<double> ConfigLoader::get_ref_vector() {
     return ref_vector;
 }
 
+Vector<double> ConfigLoader::get_init_x() {
+    return init_x;
+}
+
+Vector<double> ConfigLoader::get_init_u() {
+    return init_u;
+}
+
 bool ConfigLoader::loadConfiguration() {
 
-    vector<double> A, B, C1, C2, r;
+    vector<double> A, B, C1, C2, r, x0, u0;
 
     try {
         //list of simulations in config file
@@ -158,8 +184,16 @@ bool ConfigLoader::loadConfiguration() {
             logFile << "missing reference vector r in config file" << std::endl;
             return false;
         }
+        if (!recurseArray(cfg, "x0", x0)) {
+            logFile << "missing initial state x0 in config file" << std::endl;
+            return false;
+        }
+        if (!recurseArray(cfg, "u0", u0)) {
+            logFile << "missing initial state u0 in config file" << std::endl;
+            return false;
+        }
 
-        generateMatrices(A, B, C1, C2, r);
+        generateMatrices(A, B, C1, C2, r, x0, u0);
 
     }
     catch (SettingNotFoundException &snfe) {

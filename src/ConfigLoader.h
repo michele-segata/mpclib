@@ -47,7 +47,7 @@ private:
     std::ostream &logFile;
     //loaded configuration
     Matrix<double> A, B, C1, C2;
-    Vector<double> ref_vector;
+    Vector<double> ref_vector, init_x, init_u;
 
     /**
      * Return, if any, the name of a variable inside ${}
@@ -247,7 +247,8 @@ public:
      */
     bool generateMatrices(const vector<double> &vA, const vector<double> &vB,
                           const vector<double> &vC1, const vector<double> &vC2,
-                          const vector<double> &ref);
+                          const vector<double> &ref, const vector<double> &x0,
+                          const vector<double> &u0);
 
     /**
      * Gets the discretized state matrix
@@ -278,6 +279,18 @@ public:
      * @return reference vector
      */
     Vector<double> get_ref_vector();
+
+    /**
+     * Gets the initial state
+     * @return initial state
+     */
+    Vector<double> get_init_x();
+
+    /**
+     * Gets the initial control
+     * @return initial control
+     */
+    Vector<double> get_init_u();
 
 };
 

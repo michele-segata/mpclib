@@ -185,6 +185,9 @@ int main(int argc, char** argv) {
     Matrix<double> A, B, C1, C2;
     //reference vector
     Vector<double> ref;
+    //initial state
+    Vector<double> init_x(0.0, n), init_u(0.0, p);
+
 
 #ifdef ENABLE_CONFIG_FILE
     if (config.isSet()) {
@@ -200,6 +203,8 @@ int main(int argc, char** argv) {
         C1 = cfg.get_C1();
         C2 = cfg.get_C2();
         ref = cfg.get_ref_vector();
+        init_x = cfg.get_init_x();
+        init_u = cfg.get_init_u();
         n = Ac.nrows();
         p = Bc.ncols();
         q = C1.nrows();
@@ -218,9 +223,6 @@ int main(int argc, char** argv) {
 #ifdef ENABLE_CONFIG_FILE
     }
 #endif
-
-    //initial state
-    Vector<double> init_x(0.0, n), init_u(0.0, p);
 
     // bounds
     Vector<double> ymin(a_min.getValue(), q2);
