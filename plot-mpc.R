@@ -31,7 +31,10 @@ if (!interactive()) {
 
 dataset <- function(ns) {
     if (ns == -1) {
-        subset(d, k == 1)
+        if (max(d$n) == 0)
+            d
+        else
+            subset(d, k == 1)
     } else {
         subset(d, n == ns)
     }
