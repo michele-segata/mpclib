@@ -100,6 +100,7 @@ bool ConfigLoader::generateMatrices(const vector<double> &vA,
     if (ref.size() == 0 || ref.size() % q != 0) {
         logFile << "The reference vector size must be a multiple of q=" << q
                 << "\n";
+        return false;
     }
     ref_vector.resize(ref.size());
     for (int i = 0; i < ref.size(); i++)
