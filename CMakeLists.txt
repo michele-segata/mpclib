@@ -18,6 +18,16 @@ else(${CMAKE_BUILD_TYPE} MATCHES "Release")
     message(STATUS "Configuring project in " ${CMAKE_BUILD_TYPE} " mode")
 endif()
 
+option(ENABLE_PROFILING "Enable execution timers to monitor the performance" OFF)
+
+if (ENABLE_PROFILING)
+    message(STATUS "Enabling application profiling")
+    add_definitions(-DENABLE_PROFILING)
+    set(ENABLE_PROFILING OFF CACHE BOOL "" FORCE)
+else()
+    message(STATUS "Profiling disabled. Use -DENABLE_PROFILING=ON to enable")
+endif()
+
 FIND_PACKAGE(GSL)
 FIND_PACKAGE(Matheval)
 FIND_PACKAGE(Config)

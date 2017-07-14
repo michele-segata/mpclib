@@ -67,6 +67,10 @@
 #include "ConfigLoader.h"
 #endif
 
+#ifdef ENABLE_PROFILING
+#include <sys/time.h>
+#endif
+
 using namespace std;
 
 #ifndef ISZERO
@@ -94,7 +98,27 @@ Matrix<double> get_A(double ts, double tau);
  */
 Matrix<double> get_B(double ts, double tau);
 
+#ifdef ENABLE_PROFILING
+/**
+ * Starts a timer for profiling
+ * @param timer variable to initialize with current time
+ */
+void start_timer(struct timeval *timer);
+
+/**
+ * Computes elapsed second since timer started
+ * @param timer timer initialized with start_timer
+ * @return the elapsed time from the start of the timer till now
+ */
+double stop_timer(const struct timeval *timer);
+#endif
+
 int main(int argc, char** argv) {
+
+#ifdef ENABLE_PROFILING
+    struct timeval total_time;
+    start_timer(&total_time);
+#endif
 
     // define command line arguments
     VAD a_min("a", "a-min", "acceleration lower bound", false, -1e9, "double");
@@ -324,6 +348,16 @@ int main(int argc, char** argv) {
     if (simulate.isSet())
         sim_steps = simulate.getValue();
 
+#ifdef ENABLE_PROFILING
+    struct timeval timer;
+    start_timer(&timer);
+#endif
+    mpc.setup_problem();
+#ifdef ENABLE_PROFILING
+    double elapsed = stop_timer(&timer);
+    std::cerr << "Problem setup: " << elapsed << " seconds\n";
+#endif
+
     // write the result to stdout (sim step, solution step, state, control,
     // and control derivative)
 
@@ -343,7 +377,17 @@ int main(int argc, char** argv) {
     for (int t = 0; t < sim_steps; t++) {
 
         // solve the problem
+#ifdef ENABLE_PROFILING
+        start_timer(&timer);
+#endif
+
         min = mpc.solve_mpc(solution);
+
+#ifdef ENABLE_PROFILING
+        elapsed = stop_timer(&timer);
+        std::cerr << "Solving time (" << t << "): " << elapsed << " seconds\n";
+#endif
+
         if (!mpc.is_feasible(min)) {
             // if unfeasible, no need to continue
             break;
@@ -383,6 +427,11 @@ int main(int argc, char** argv) {
         mpc.update_initial_control(init_u);
     }
 
+#ifdef ENABLE_PROFILING
+    elapsed = stop_timer(&total_time);
+    std::cerr << "Elapsed time: " << elapsed << " seconds\n";
+#endif
+
     return 0;
 }
 
@@ -401,3 +450,17 @@ Matrix<double> get_B(double ts, double tau) {
     B[1][0] = ts + tau * (exp(-ts/tau) - 1);
     return B;
 }
+
+#ifdef ENABLE_PROFILING
+void start_timer(struct timeval *timer) {
+    gettimeofday(timer, 0);
+}
+
+double stop_timer(const struct timeval *timer) {
+    struct timeval now;
+    gettimeofday(&now, 0);
+    double start_s = timer->tv_sec + timer->tv_usec / 1.0e6;
+    double end_s = now.tv_sec + now.tv_usec / 1.0e6;
+    return end_s - start_s;
+}
+#endif
