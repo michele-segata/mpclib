@@ -232,6 +232,11 @@ public:
     void setup_problem();
 
     /**
+     * Returns whether the quadratic programming problem is setup or not.
+     */
+    bool is_problem_setup();
+
+    /**
      * Sets the A, B, and C matrices
      * @param A state matrix (discrete time)
      * @param B control matrix (discrete time)

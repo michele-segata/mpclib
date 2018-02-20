@@ -388,6 +388,10 @@ void MPCProblem::setup_problem() {
     problem_setup = true;
 }
 
+bool MPCProblem::is_problem_setup() {
+    return problem_setup;
+}
+
 bool MPCProblem::set_state_space_matrices(const Matrix<double> &A,
                                           const Matrix<double> &B,
                                           const Matrix<double> &C1,
