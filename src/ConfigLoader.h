@@ -131,7 +131,6 @@ private:
             //if there are variables, then we need to find them
             for (int i = 0; i < me.getVariablesCount(); i++) {
                 double variableValue;
-                bool searchResult;
                 if (!recurseExpression(setting, me.getVariable(i), variableValue))
                     //variable was not found in config file
                     return false;
@@ -171,7 +170,6 @@ private:
             //if there are variables, then we need to find them
             for (int i = 0; i < me.getVariablesCount(); i++) {
                 double variableValue;
-                bool searchResult;
                 //if we search for a variable with the same name as the requested
                 //one, then go one level up, otherwise we'll incur in infinite
                 //recursion
