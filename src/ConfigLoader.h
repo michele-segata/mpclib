@@ -108,7 +108,7 @@ private:
         }
 
     }
-    
+
     template <typename T>
     bool recurseValue(Setting &setting, T &result) {
 
